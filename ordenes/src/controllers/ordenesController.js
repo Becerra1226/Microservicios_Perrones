@@ -30,9 +30,10 @@ router.get('/ordenes/:id', async (req, res) => {
 
         const id = req.params.id;
 
-        var result = await ordenesModel.getOrdenById(id);
+        // Obtener la orden
+        const orden = await ordenesModel.getOrdenById(id);
 
-        if (!result || result.length === 0) {
+        if (!orden || orden.length === 0) {
 
             return res.status(404).json({
                 error: 'Orden no encontrada'
@@ -40,7 +41,13 @@ router.get('/ordenes/:id', async (req, res) => {
 
         }
 
-        res.json(result);
+        // Obtener el detalle de la orden
+        const detalle = await ordenesModel.getDetalleOrden(id);
+
+        // Agregar el detalle al objeto de la orden
+        orden[0].detalle = detalle;
+
+        res.json(orden[0]);
 
     } catch (error) {
 
@@ -168,4 +175,55 @@ router.post('/ordenes', async (req, res) => {
 
 });
 
+router.patch('/ordenes/:id/estado', async (req, res) => {
+
+    try {
+
+        const id = req.params.id;
+        const { estado } = req.body;
+
+        const estadosValidos = [
+            'PAGADA',
+            'ENTREGADA',
+            'CANCELADA'
+        ];
+
+        // Validar que se envíe un estado
+        if (!estado) {
+            return res.status(400).json({
+                error: 'El estado es obligatorio'
+            });
+        }
+
+        // Validar estado
+        if (!estadosValidos.includes(estado)) {
+            return res.status(400).json({
+                error: 'Estado inválido'
+            });
+        }
+
+        const result = await ordenesModel.updateEstadoOrden(id, estado);
+
+        // Verificar si la orden existe
+        if (result.affectedRows === 0) {
+            return res.status(404).json({
+                error: 'Orden no encontrada'
+            });
+        }
+
+        res.json({
+            mensaje: 'Estado actualizado correctamente'
+        });
+
+    } catch (error) {
+
+        console.error(error);
+
+        res.status(500).json({
+            error: 'Error al actualizar el estado de la orden'
+        });
+
+    }
+
+});
 module.exports = router;

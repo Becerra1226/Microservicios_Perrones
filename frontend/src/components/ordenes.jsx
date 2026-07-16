@@ -1,13 +1,10 @@
 import { useState, useEffect } from 'react';
 import { obtenerProductos } from '../api/productosApi';
-import PasarelaPago from './PasarelaPago'; // <-- IMPORTAMOS EL NUEVO COMPONENTE
 import { useNavigate } from 'react-router-dom';
 import { 
   Package, Loader2, Trash2, Plus, Minus, 
   ShoppingCart, Sparkles, Ban
 } from 'lucide-react';
-
-
 
 const CATEGORIAS_VALIDAS = [
   'Perros', 'Perras', 'Desgranados/Salchipapa', 'Bebidas', 
@@ -29,8 +26,8 @@ function Ordenes() {
   const [orden, setOrden] = useState([]);
   const [menuModificador, setMenuModificador] = useState({ id: null, tipo: null });
 
-  // Estado que controla el modal
-  const [mostrarPasarela, setMostrarPasarela] = useState(false);
+  // Inicializamos el hook para navegar a la nueva página
+  const navigate = useNavigate();
 
   useEffect(() => {
     const cargarDatos = async () => {
@@ -122,10 +119,11 @@ function Ordenes() {
 
   const subtotal = calcularSubtotal();
 
-  const manejarPagoExitoso = () => {
-    setOrden([]);
-    setMenuModificador({ id: null, tipo: null });
-    setMostrarPasarela(false);
+  // Función que reemplaza a la del modal para navegar a la pasarela
+  const irAPago = () => {
+    if (orden.length > 0) {
+      navigate('/pago', { state: { orden, subtotal } });
+    }
   };
 
   if (cargando) {
@@ -320,7 +318,7 @@ function Ordenes() {
             </div>
             
             <button 
-              onClick={() => setMostrarPasarela(true)}
+              onClick={irAPago}
               disabled={orden.length === 0}
               className="w-full bg-slate-950 text-white py-3.5 rounded-xl font-bold shadow-md hover:bg-slate-900 focus:ring-4 focus:ring-slate-200 transition-all disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
             >
@@ -329,15 +327,6 @@ function Ordenes() {
           </div>
         </div>
       </div>
-
-      {/* COMPONENTE SEPARADO PARA EL PAGO */}
-      <PasarelaPago 
-        mostrar={mostrarPasarela}
-        onClose={() => setMostrarPasarela(false)}
-        orden={orden}
-        subtotal={subtotal}
-        onPagoExitoso={manejarPagoExitoso}
-      />
     </>
   );
 }

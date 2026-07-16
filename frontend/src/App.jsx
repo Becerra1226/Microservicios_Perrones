@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import Login from './components/Login';
 import Ordenes from './components/Ordenes';
+import PasarelaPago from './components/PasarelaPago'; // <-- IMPORTAMOS LA PASARELA
 import { ShieldCheck, LogOut } from 'lucide-react';
 
 function App() {
@@ -46,8 +47,9 @@ function App() {
 
         <main className="flex-1 p-8 max-w-7xl w-full mx-auto">
           <Routes>
-            {/* Única ruta principal. La pasarela ahora vive dentro de Ordenes como modal */}
             <Route path="/" element={<Ordenes />} />
+            {/* NUEVA RUTA: Agregamos la ruta para que React Router sepa dónde ir */}
+            <Route path="/pago" element={<PasarelaPago />} />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </main>

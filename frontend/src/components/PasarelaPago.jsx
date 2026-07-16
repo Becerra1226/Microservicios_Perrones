@@ -12,6 +12,7 @@ import {
   X,
 } from "lucide-react";
 import { crearOrden } from "../api/ordenesApi";
+import { crearFactura } from "../api/facturacionApi"; // NUEVA IMPORTACIÓN
 
 function PasarelaPago() {
   const location = useLocation();
@@ -252,11 +253,13 @@ function PasarelaPago() {
     setMostrarMultiPago(false);
   };
 
+  // === IMPLEMENTACIÓN DE LA NUEVA LÓGICA DE FACTURACIÓN Y ORDENES ===
   const handleProcesarPago = async () => {
     if (!pagoCompletado || confirmando) return;
     setConfirmando(true);
 
     try {
+      // 1. Construir el payload de la orden (sin cambios)
       const productosPayload = [];
       orden.forEach((item) => {
         productosPayload.push({
@@ -275,10 +278,54 @@ function PasarelaPago() {
         });
       });
 
-      const payloadFinal = { productos: productosPayload };
-      const resultado = await crearOrden(payloadFinal);
+      const payloadOrden = { productos: productosPayload };
 
-      let mensajeExito = `¡Orden creada con éxito!\nCódigo: ${resultado.orden_id || "N/A"}`;
+      // 2. Crear la orden en MS de Órdenes
+      const resultadoOrden = await crearOrden(payloadOrden);
+      const ordenId = resultadoOrden.orden_id || resultadoOrden.id;
+
+      if (!ordenId) {
+        throw new Error("No se obtuvo el ID de la orden creada");
+      }
+
+      // 3. Formatear los pagos para MS de Facturación
+      const pagosFormateados = [];
+      if (Number(pagos.efectivo) > 0) {
+        pagosFormateados.push({
+          metodo_pago: "EFECTIVO",
+          valor: Number(pagos.efectivo) - devuelta,
+        });
+      }
+      if (Number(pagos.tarjeta) > 0) {
+        pagosFormateados.push({
+          metodo_pago: "TARJETA",
+          valor: Number(pagos.tarjeta),
+        });
+      }
+      if (Number(pagos.transferencia) > 0) {
+        pagosFormateados.push({
+          metodo_pago: "TRANSFERENCIA",
+          valor: Number(pagos.transferencia),
+        });
+      }
+
+      // 4. Crear el payload de la factura
+      const payloadFactura = {
+        orden_id: ordenId,
+        propina: propina,
+        pagos: pagosFormateados,
+      };
+
+      // 5. Generar Idempotency Key y llamar al MS de Facturación
+      const idempotencyKey = crypto.randomUUID();
+      const resultadoFactura = await crearFactura(
+        payloadFactura,
+        idempotencyKey,
+      );
+
+      // 6. Preparar mensaje de éxito y finalizar
+      let mensajeExito = `¡Venta completada con éxito!\nOrden ID: ${ordenId}\nFactura Código: ${resultadoFactura.codigo}`;
+
       if (devuelta > 0 && Number(pagos.efectivo) > 0) {
         mensajeExito += `\n\nEntregar devuelta total en efectivo: $${devuelta.toLocaleString("es-CO")}`;
       }
@@ -289,7 +336,7 @@ function PasarelaPago() {
       sessionStorage.removeItem("subtotal_en_curso");
       navigate("/");
     } catch (err) {
-      alert(`Error al guardar la orden: ${err}`);
+      alert(`Error al procesar la venta: ${err}`);
     } finally {
       setConfirmando(false);
     }

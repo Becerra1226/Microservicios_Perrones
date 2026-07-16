@@ -7,16 +7,19 @@ function PasarelaPago() {
   const location = useLocation();
   const navigate = useNavigate();
 
-  // Recibimos los datos enviados desde Ordenes.jsx
-  // Si alguien entra directo a /pago sin orden, ponemos valores por defecto
-  const { orden = [], subtotal = 0 } = location.state || {};
+  // 1. Priorizamos location.state, si está vacío buscamos en sessionStorage usando LAS MISMAS CLAVES que en Ordenes.jsx
+  const orden = location.state?.orden || JSON.parse(sessionStorage.getItem('orden_en_curso') || '[]');
+  const subtotal = location.state?.subtotal || Number(sessionStorage.getItem('subtotal_en_curso') || 0);
 
-  // Redirigir si no hay orden
+  // 2. Redirigir si no hay orden, de lo contrario asegurar que esté en sessionStorage
   useEffect(() => {
     if (orden.length === 0) {
-      navigate('/'); // Cambia '/' por la ruta de tu menú de órdenes si es diferente
+      navigate('/'); 
+    } else {
+      sessionStorage.setItem('orden_en_curso', JSON.stringify(orden));
+      sessionStorage.setItem('subtotal_en_curso', subtotal.toString());
     }
-  }, [orden, navigate]);
+  }, [orden, subtotal, navigate]);
 
   const [confirmando, setConfirmando] = useState(false);
 
@@ -38,7 +41,6 @@ function PasarelaPago() {
   const granTotal = subtotal + propina;
 
   // --- ESTADOS PARA PAGOS DIVIDIDOS ---
-  // Inicializamos el efectivo con el total sugerido (subtotal + 10%) una sola vez
   const [pagos, setPagos] = useState({
     efectivo: (subtotal + (subtotal * 0.10)).toString(),
     tarjeta: '',
@@ -111,7 +113,13 @@ function PasarelaPago() {
       }
 
       alert(mensajeExito);
-      navigate('/'); // Volver a la pantalla de órdenes tras pago exitoso
+      
+      // 3. LIMPIEZA CLAVE: Usamos exactamente el mismo nombre que en Ordenes.jsx
+      sessionStorage.removeItem('orden_en_curso');
+      sessionStorage.removeItem('subtotal_en_curso');
+      
+      // Regresar al menú, que ahora leerá un sessionStorage limpio
+      navigate('/'); 
 
     } catch (err) {
       alert(`Error al guardar la orden: ${err}`);

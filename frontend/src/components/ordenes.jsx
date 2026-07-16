@@ -23,11 +23,20 @@ function Ordenes() {
   const [error, setError] = useState('');
   const [categoriaActiva, setCategoriaActiva] = useState(CATEGORIAS_VALIDAS[0]);
   
-  const [orden, setOrden] = useState([]);
+  // 1. INICIALIZAMOS LA ORDEN LEYENDO DE SESSION STORAGE
+  const [orden, setOrden] = useState(() => {
+    const ordenGuardada = sessionStorage.getItem('orden_en_curso');
+    return ordenGuardada ? JSON.parse(ordenGuardada) : [];
+  });
+  
   const [menuModificador, setMenuModificador] = useState({ id: null, tipo: null });
 
-  // Inicializamos el hook para navegar a la nueva página
   const navigate = useNavigate();
+
+  // 2. GUARDAMOS LA ORDEN AUTOMÁTICAMENTE EN SESSION STORAGE CADA VEZ QUE CAMBIA
+  useEffect(() => {
+    sessionStorage.setItem('orden_en_curso', JSON.stringify(orden));
+  }, [orden]);
 
   useEffect(() => {
     const cargarDatos = async () => {
@@ -119,7 +128,6 @@ function Ordenes() {
 
   const subtotal = calcularSubtotal();
 
-  // Función que reemplaza a la del modal para navegar a la pasarela
   const irAPago = () => {
     if (orden.length > 0) {
       navigate('/pago', { state: { orden, subtotal } });

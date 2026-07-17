@@ -100,7 +100,7 @@ router.post("/facturas", idempotencyMiddleware, async (req, res) => {
     // =====================================
 
     const response = await axios.get(
-      `http://localhost:3002/ordenes/${orden_id}`,
+      `${process.env.ORDENES_URL}/ordenes/${orden_id}`,
     );
 
     const orden = response.data;

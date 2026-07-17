@@ -11,8 +11,8 @@ import {
   Users,
   X,
 } from "lucide-react";
-import { crearOrden } from "../api/ordenesApi";
-import { crearFactura } from "../api/facturacionApi"; // NUEVA IMPORTACIÓN
+import { crearOrden } from "../API/ordenesApi";
+import { crearFactura } from "../API/facturacionApi"; // NUEVA IMPORTACIÓN
 
 function PasarelaPago() {
   const location = useLocation();

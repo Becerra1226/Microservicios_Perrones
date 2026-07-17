@@ -1,16 +1,16 @@
-import { useState } from 'react';
-import { Mail, Lock, Loader2, ShieldCheck } from 'lucide-react';
-import { iniciarSesion } from '../api/usuariosApi';
+import { useState } from "react";
+import { Mail, Lock, Loader2, ShieldCheck } from "lucide-react";
+import { iniciarSesion } from "../API/usuariosApi";
 
 function Login({ onLoginSuccess }) {
-  const [correo, setCorreo] = useState('');
-  const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
+  const [correo, setCorreo] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
   const [cargando, setCargando] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError('');
+    setError("");
     setCargando(true);
 
     try {
@@ -27,14 +27,17 @@ function Login({ onLoginSuccess }) {
   return (
     <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4 antialiased font-sans">
       <div className="w-full max-w-md bg-white border border-slate-200 rounded-2xl p-8 shadow-xs">
-        
         {/* Logo / Encabezado */}
         <div className="flex flex-col items-center mb-8">
           <div className="w-12 h-12 bg-slate-950 text-white rounded-xl flex items-center justify-center mb-3">
             <ShieldCheck className="w-6 h-6" />
           </div>
-          <h2 className="text-xl font-bold text-slate-950 tracking-tight">Bienvenido a Perrones</h2>
-          <p className="text-sm text-slate-400 mt-1">Ingresa tus credenciales para continuar</p>
+          <h2 className="text-xl font-bold text-slate-950 tracking-tight">
+            Bienvenido a Perrones
+          </h2>
+          <p className="text-sm text-slate-400 mt-1">
+            Ingresa tus credenciales para continuar
+          </p>
         </div>
 
         {/* Mensaje de Error */}
@@ -91,7 +94,7 @@ function Login({ onLoginSuccess }) {
                 Verificando...
               </>
             ) : (
-              'Iniciar Sesión'
+              "Iniciar Sesión"
             )}
           </button>
         </form>

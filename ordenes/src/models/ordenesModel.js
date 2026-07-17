@@ -1,52 +1,47 @@
-const mysql = require('mysql2/promise');
+const mysql = require("mysql2/promise");
+require("dotenv").config();
 
 const conection = mysql.createPool({
-    host: 'localhost',
-    user: 'root',
-    password: '',
-    database: 'ordenes',
+  host: process.env.DB_HOST,
+  port: process.env.DB_PORT,
+  user: process.env.DB_USER,
+  password: process.env.DB_PASSWORD,
+  database: process.env.DB_NAME,
 });
-
 
 // =========================================
 // Obtener todas las órdenes
 // =========================================
 async function getOrdenes() {
-
-    const result = await conection.query(`
+  const result = await conection.query(`
         SELECT * FROM ordenes
         ORDER BY fecha_creacion DESC
     `);
 
-    return result[0];
+  return result[0];
 }
-
 
 // =========================================
 // Obtener orden por ID
 // =========================================
 async function getOrdenById(id) {
-
-    const result = await conection.query(`
+  const result = await conection.query(
+    `
         SELECT * FROM ordenes
         WHERE id = ?
-    `, [id]);
+    `,
+    [id],
+  );
 
-    return result[0];
+  return result[0];
 }
-
 
 // =========================================
 // Crear orden
 // =========================================
-async function createOrden(
-    codigo,
-    subtotal,
-    total,
-    estado
-) {
-
-    const result = await conection.query(`
+async function createOrden(codigo, subtotal, total, estado) {
+  const result = await conection.query(
+    `
         INSERT INTO ordenes (
             codigo,
             subtotal,
@@ -54,30 +49,26 @@ async function createOrden(
             estado
         )
         VALUES (?, ?, ?, ?)
-    `, [
-        codigo,
-        subtotal,
-        total,
-        estado
-    ]);
+    `,
+    [codigo, subtotal, total, estado],
+  );
 
-    return result[0];
+  return result[0];
 }
-
 
 // =========================================
 // Crear detalle orden
 // =========================================
 async function createDetalleOrden(
-    orden_id,
-    producto_id,
-    nombre_producto,
-    precio_unitario,
-    cantidad,
-    subtotal
+  orden_id,
+  producto_id,
+  nombre_producto,
+  precio_unitario,
+  cantidad,
+  subtotal,
 ) {
-
-    const result = await conection.query(`
+  const result = await conection.query(
+    `
         INSERT INTO detalle_orden (
             orden_id,
             producto_id,
@@ -87,68 +78,72 @@ async function createDetalleOrden(
             subtotal
         )
         VALUES (?, ?, ?, ?, ?, ?)
-    `, [
-        orden_id,
-        producto_id,
-        nombre_producto,
-        precio_unitario,
-        cantidad,
-        subtotal
-    ]);
+    `,
+    [
+      orden_id,
+      producto_id,
+      nombre_producto,
+      precio_unitario,
+      cantidad,
+      subtotal,
+    ],
+  );
 
-    return result[0];
+  return result[0];
 }
-
 
 // =========================================
 // Obtener detalle de una orden
 // =========================================
 async function getDetalleOrden(orden_id) {
-
-    const result = await conection.query(`
+  const result = await conection.query(
+    `
         SELECT * FROM detalle_orden
         WHERE orden_id = ?
-    `, [orden_id]);
+    `,
+    [orden_id],
+  );
 
-    return result[0];
+  return result[0];
 }
-
 
 // =========================================
 // Actualizar estado orden
 // =========================================
 async function updateEstadoOrden(id, estado) {
-
-    const result = await conection.query(`
+  const result = await conection.query(
+    `
         UPDATE ordenes
         SET estado = ?
         WHERE id = ?
-    `, [estado, id]);
+    `,
+    [estado, id],
+  );
 
-    return result[0];
+  return result[0];
 }
-
 
 // =========================================
 // Eliminar orden
 // =========================================
 async function deleteOrden(id) {
-
-    const result = await conection.query(`
+  const result = await conection.query(
+    `
         DELETE FROM ordenes
         WHERE id = ?
-    `, [id]);
+    `,
+    [id],
+  );
 
-    return result[0];
+  return result[0];
 }
 
-
 module.exports = {
-    getOrdenes,
-    getOrdenById,
-    createOrden,
-    createDetalleOrden,
-    getDetalleOrden,
-    updateEstadoOrden,
-    deleteOrden
+  getOrdenes,
+  getOrdenById,
+  createOrden,
+  createDetalleOrden,
+  getDetalleOrden,
+  updateEstadoOrden,
+  deleteOrden,
 };

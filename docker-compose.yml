@@ -1,0 +1,76 @@
+version: "3.9"
+
+services:
+  productos:
+    image: ms-productos
+    build: ./productos
+    container_name: ms-productos
+    ports:
+      - "3001:3001"
+    environment:
+      DB_HOST: host.docker.internal
+      DB_PORT: 3306
+      DB_USER: root
+      DB_PASSWORD:
+      DB_NAME: perrones
+      PORT: 3001
+
+  usuarios:
+    image: ms-usuarios
+    build: ./usuarios
+    container_name: ms-usuarios
+    ports:
+      - "3003:3003"
+    environment:
+      DB_HOST: host.docker.internal
+      DB_PORT: 3306
+      DB_USER: root
+      DB_PASSWORD:
+      DB_NAME: usuarios
+      PORT: 3003
+
+  ordenes:
+    image: ms-ordenes
+    build: ./ordenes
+    container_name: ms-ordenes
+    ports:
+      - "3002:3002"
+    environment:
+      DB_HOST: host.docker.internal
+      DB_PORT: 3306
+      DB_USER: root
+      DB_PASSWORD:
+      DB_NAME: ordenes
+      PORT: 3002
+      PRODUCTOS_URL: http://productos:3001
+    depends_on:
+      - productos
+
+  facturacion:
+    image: ms-facturacion
+    build: ./facturacion
+    container_name: ms-facturacion
+    ports:
+      - "3004:3004"
+    environment:
+      DB_HOST: host.docker.internal
+      DB_PORT: 3306
+      DB_USER: root
+      DB_PASSWORD:
+      DB_NAME: facturacion
+      PORT: 3004
+      ORDENES_URL: http://ordenes:3002
+    depends_on:
+      - ordenes
+
+  frontend:
+    image: frontend-perrones
+    build: ./frontend
+    container_name: frontend
+    ports:
+      - "5173:5173"
+    depends_on:
+      - productos
+      - usuarios
+      - ordenes
+      - facturacion

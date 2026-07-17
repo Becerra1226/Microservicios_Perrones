@@ -1,6 +1,17 @@
-version: "3.9"
-
 services:
+  # --- NUEVO SERVICIO DE BASE DE DATOS ---
+  mysql-server:
+    image: mysql:8.0
+    container_name: perrones_db
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_ALLOW_EMPTY_PASSWORD: "yes" # Permite el DB_PASSWORD vacío
+    volumes:
+      - ./databases:/docker-entrypoint-initdb.d # Carpeta con tus .sql
+      - mysql_data:/var/lib/mysql
+
+  # --- TUS MICROSERVICIOS ---
   productos:
     image: ms-productos
     build: ./productos
@@ -8,12 +19,14 @@ services:
     ports:
       - "3001:3001"
     environment:
-      DB_HOST: host.docker.internal
+      DB_HOST: mysql-server # <-- Cambiado
       DB_PORT: 3306
       DB_USER: root
       DB_PASSWORD:
       DB_NAME: perrones
       PORT: 3001
+    depends_on:
+      - mysql-server # <-- Añadido
 
   usuarios:
     image: ms-usuarios
@@ -22,12 +35,14 @@ services:
     ports:
       - "3003:3003"
     environment:
-      DB_HOST: host.docker.internal
+      DB_HOST: mysql-server # <-- Cambiado
       DB_PORT: 3306
       DB_USER: root
       DB_PASSWORD:
       DB_NAME: usuarios
       PORT: 3003
+    depends_on:
+      - mysql-server # <-- Añadido
 
   ordenes:
     image: ms-ordenes
@@ -36,7 +51,7 @@ services:
     ports:
       - "3002:3002"
     environment:
-      DB_HOST: host.docker.internal
+      DB_HOST: mysql-server # <-- Cambiado
       DB_PORT: 3306
       DB_USER: root
       DB_PASSWORD:
@@ -44,6 +59,7 @@ services:
       PORT: 3002
       PRODUCTOS_URL: http://productos:3001
     depends_on:
+      - mysql-server # <-- Añadido
       - productos
 
   facturacion:
@@ -53,7 +69,7 @@ services:
     ports:
       - "3004:3004"
     environment:
-      DB_HOST: host.docker.internal
+      DB_HOST: mysql-server # <-- Cambiado
       DB_PORT: 3306
       DB_USER: root
       DB_PASSWORD:
@@ -61,6 +77,7 @@ services:
       PORT: 3004
       ORDENES_URL: http://ordenes:3002
     depends_on:
+      - mysql-server # <-- Añadido
       - ordenes
 
   frontend:
@@ -74,3 +91,7 @@ services:
       - usuarios
       - ordenes
       - facturacion
+
+# --- VOLUMEN PARA LA BASE DE DATOS ---
+volumes:
+  mysql_data:

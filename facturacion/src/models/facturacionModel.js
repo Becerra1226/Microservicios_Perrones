@@ -93,11 +93,12 @@ async function getFacturaByOrdenId(orden_id) {
 // Crear factura
 // =====================================
 async function createFactura(orden_id, subtotal, propina, total) {
+  // Agregamos 'codigo' con un valor temporal como "PENDIENTE"
   const result = await conection.query(
     `INSERT INTO facturas
-        (orden_id, subtotal, propina, total)
-        VALUES (?, ?, ?, ?)`,
-    [orden_id, subtotal, propina, total],
+        (orden_id, codigo, subtotal, propina, total)
+        VALUES (?, ?, ?, ?, ?)`,
+    [orden_id, "PENDIENTE", subtotal, propina, total],
   );
 
   return result[0];
